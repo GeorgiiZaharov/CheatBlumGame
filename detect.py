@@ -17,8 +17,19 @@ class Detect:
         self.border_color = border_color
         self.label = label
         self.range_hsv = range_hsv
+        self.use_cuda = cv2.cuda.getCudaEnabledDeviceCount() > 0
+        self.min_square = 20
 
+        if (self.use_cuda) print("Обнаружено устройство GPU")
+        else print("Устройство GPU не обнаружено")
+        
     def get_bounds(self, img):
+        if not self.use_cuda:
+            return self.__get_bounds_without_cuda(img)
+        else:
+            return self.__get_bounds_with_cuda(img)
+
+    def __get_bounds_without_cuda(self, img):
         # Преобразование изображения в цветовое пространство HSV
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         # Создание маски по диапазону HSV
@@ -34,9 +45,39 @@ class Detect:
         # Нахождение контуров
         contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         # Определение координат прямоугольников вокруг контуров
-        bounds = [cv2.boundingRect(contour) for contour in contours if cv2.contourArea(contour) > 20]
+        bounds = [cv2.boundingRect(contour) for contour in contours if cv2.contourArea(contour) > self.min_square]
         return bounds
 
+    def __get_bounds_with_cuda(self, img):
+
+        # Преобразование изображения в цветовое пространство HSV
+        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # Создание маски по диапазону HSV
+        mask = cv2.inRange(img_hsv, self.range_hsv.get_lower(), self.range_hsv.get_upper())
+        
+        # Перенос маски на GPU
+        gpu_mask = cv2.cuda_GpuMat()
+        gpu_mask.upload(mask)
+
+        # Размытие по Гауссу с ядром 3x3 на GPU
+        gpu_blurred = cv2.cuda.createGaussianFilter(cv2.CV_8UC1, (3, 3), 0)
+        gpu_blurred_mask = gpu_blurred.apply(gpu_mask)
+        
+        # Определение границ с помощью Canny на GPU
+        gpu_edges = cv2.cuda.createCannyEdgeDetector(25, 75)
+        gpu_edges_result = gpu_edges.detect(gpu_blurred_mask)
+        edges = gpu_edges_result.download()  # Вернуть результат на CPU
+
+        # Увеличение размеров объектов на изображении
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        dilated = cv2.dilate(edges, kernel)
+
+        # Нахождение контуров
+        contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Определение координат прямоугольников вокруг контуров
+        bounds = [cv2.boundingRect(contour) for contour in contours if cv2.contourArea(contour) > self.min_square]
+        return bounds
+    
     def draw_bounds(self, img):
         # Получение координат объектов
         bounds = self.get_bounds(img)
