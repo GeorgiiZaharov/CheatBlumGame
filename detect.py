@@ -58,7 +58,7 @@ if __name__ == "__main__":
     detect_bomb = Detect((0, 0, 255), "Bomb", bomb_hsv)
 
     # Захват изображения (замените этот код на реальный захват изображения)
-    img = cv2.imread('/home/georgii/Projects/LearnOpenCV/partOnlyBlum.png')  # Замените на путь к вашему изображению
+    img = cv2.imread('/home/georgii/Изображения/BIMBIMBAMBAM.png')  # Замените на путь к вашему изображению
 
     detect_blum.draw_bounds(img)
     detect_bomb.draw_bounds(img)
