@@ -6,10 +6,10 @@ import numpy as np
 import random
 import time
 import sys
+import mss
 
 from detect import *
 
-import mss
 
 # Настройки pyautogui для ускорения кликов
 pyautogui.PAUSE = 0  # Отключаем паузу между действиями
