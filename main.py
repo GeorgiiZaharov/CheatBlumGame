@@ -105,11 +105,6 @@ class Cheat:
             detected_blums = self.detect_blum.get_bounds(img)
             detected_bombs = self.detect_bomb.get_bounds(img)
             
-            # Обновляем данные
-            current_time_ms = time.time_ns() // 1_000_000
-            self.was_press = list(filter(lambda note: current_time_ms - note["time"] < self.time_for_recharge, self.was_press))
-
-            self.bombs = list(filter(lambda note: current_time_ms - note["time"] < self.bomb_track_time, self.bombs))
             for bomb in detected_bombs:
                 note = {
                         "time": current_time_ms,
@@ -127,6 +122,11 @@ class Cheat:
                 if self.need_hit(self.blum_hit_probability) or blum[1] >= 500:
                     self.click_on_obj(blum)
 
+            # Обновляем данные
+            current_time_ms = time.time_ns() // 1_000_000
+            self.was_press = list(filter(lambda note: current_time_ms - note["time"] < self.time_for_recharge, self.was_press))
+
+            self.bombs = list(filter(lambda note: current_time_ms - note["time"] < self.bomb_track_time, self.bombs))
             if self.debug_mode:
                 if time.time() - start_time < 30:
                     out.write(img)
