@@ -44,6 +44,8 @@ class Cheat:
         self.time_for_recharge = self.recharge_time
         self.debug_mode = debug_mode
 
+        self.cpu_count = os.cpu_count();
+
     def need_hit(self, probability: int) -> bool:
         return random.randint(0, 1000) < probability
 
@@ -134,7 +136,7 @@ class Cheat:
                     out.release()
                     self.debug_mode = False
 
-            if os.cpu_count() <= 2:
+            if self.cpu_count <= 2:
                 time.sleep(0.01)
             # Измерение и вывод количества итераций в секунду
             if time.time() - start_iteration_time >= 1:
