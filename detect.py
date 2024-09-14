@@ -20,8 +20,8 @@ class Detect:
         self.use_cuda = cv2.cuda.getCudaEnabledDeviceCount() > 0
         self.min_square = 20
 
-        if (self.use_cuda) print("Обнаружено устройство GPU")
-        else print("Устройство GPU не обнаружено")
+        if (self.use_cuda): print("Обнаружено устройство GPU")
+        else: print("Устройство GPU не обнаружено")
         
     def get_bounds(self, img):
         if not self.use_cuda:
