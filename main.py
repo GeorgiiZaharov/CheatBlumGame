@@ -134,11 +134,14 @@ class Cheat:
                     out.release()
                     self.debug_mode = False
 
+            if os.cpu_count() <= 2:
+                time.sleep(0.01)
             # Измерение и вывод количества итераций в секунду
             if time.time() - start_iteration_time >= 1:
                 print(f"\rIterations per second: {iteration_count}", end="")
                 start_iteration_time = time.time()
                 iteration_count = 0
+
 
 def main():
     file_path = 'config.pkl'
